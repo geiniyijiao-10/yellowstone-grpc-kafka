@@ -1,3 +1,4 @@
+use tonic::codec::CompressionEncoding;
 use {
     anyhow::Context,
     clap::{Parser, Subcommand},
