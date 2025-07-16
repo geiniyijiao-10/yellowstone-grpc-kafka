@@ -231,6 +231,9 @@ impl ArgsAction {
         let mut client = GeyserGrpcClient::build_from_shared(config.endpoint)?
             .x_token(config.x_token)?
             .connect_timeout(Duration::from_secs(10))
+            .max_decoding_message_size(1_000_000_000)
+            .accept_compressed(CompressionEncoding::Zstd)
+            .send_compressed(CompressionEncoding::Zstd)
             .timeout(Duration::from_secs(5))
             .tls_config(ClientTlsConfig::new().with_native_roots())?
             .connect()
