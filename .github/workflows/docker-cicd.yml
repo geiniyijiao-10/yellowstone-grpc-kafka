@@ -1,0 +1,77 @@
+name: Docker CICD
+
+on:
+  push:
+    branches:
+      - 'master'
+#    tags:
+#      - 'v*'
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+              ~/.cargo/bin/
+              ~/.cargo/registry/index/
+              ~/.cargo/registry/cache/
+              ~/.cargo/git/db/
+              ./target
+          key: ubuntu-latest-cargo-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('**/Cargo.lock') }}-v001
+          restore-keys: |
+            ubuntu-latest-cargo-${{ hashFiles('rust-toolchain.toml') }}
+
+      - name: Set rust version
+        run: |
+          RUST_VERSION="$(grep -oP 'channel = "\K\d\.\d+\.\d+(?=")' rust-toolchain.toml)"
+          echo "RUST_VERSION=$RUST_VERSION" >> "$GITHUB_ENV"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: clippy
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsasl2-dev protobuf-compiler
+
+      - name: Build release
+        run: cargo build --release --bin grpc-kafka
+
+      - name: Deleteing directories to avoid upload conflict
+        run: |
+          rm -rf \
+            target/release/grpc-kafka.d
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yellowstone-grpc-kafka-${{ github.sha }}
+          path: |
+            target/release/grpc-kafka
+
+      - name: Log in to Alibaba Cloud Container Registry
+        run: echo "${{ secrets.ALIYUN_REGISTRYPASS }}" | docker login -u "${{ secrets.ALIYUN_REGISTRYUSER }}" --password-stdin ${{ secrets.ACR_REGISTRY }}
+
+      - name: Build Docker image
+        run: |
+          cat <<EOF > Dockerfile
+          FROM ubuntu-latest
+          WORKDIR /app
+          COPY target/release/grpc-kafka .
+          COPY config-test.json .
+          COPY config-online.json .
+          ENTRYPOINT ["tail", "-f", "/dev/null"]
+          EOF
+          docker build -t ${{ secrets.ACR_REGISTRY }}/newx-dev/${{ github.event.repository.name }}:${{ github.sha }} .
+#         ENTRYPOINT ["./grpc-kafka", "-c", "config.json"]
+#      - name: Push Docker image to Alibaba Cloud
+#        run: docker push ${{ secrets.ACR_REGISTRY }}/newx-dev/${{ github.event.repository.name }}:${{ github.sha }}
