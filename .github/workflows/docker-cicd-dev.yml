@@ -63,9 +63,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ACR_REGISTRY }}/newx-dev/${{ github.event.repository.name }}:${{ github.sha }} .
+          docker build -t ${{ secrets.ACR_REGISTRY }}/mmo-dev/${{ github.event.repository.name }}:${{ github.sha }} .
       - name: Push Docker image to Alibaba Cloud
-        run: docker push ${{ secrets.ACR_REGISTRY }}/newx-dev/${{ github.event.repository.name }}:${{ github.sha }}
+        run: docker push ${{ secrets.ACR_REGISTRY }}/mmo-dev/${{ github.event.repository.name }}:${{ github.sha }}
 
 
   deploy:
