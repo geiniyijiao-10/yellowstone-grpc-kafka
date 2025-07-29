@@ -1,0 +1,62 @@
+{
+	"prometheus": "127.0.0.1:8873",
+	"kafka": {
+		"bootstrap.servers": "172.28.128.103:19092",
+		"sasl.username": "root",
+		"security.protocol": "SASL_PLAINTEXT",
+		"sasl.password": "geeeeKDev",
+		"sasl.mechanism":"PLAIN",
+		"message.max.bytes": "157286400",
+		"statistics.interval.ms": "1000",
+		"queue.buffering.max.kbytes": "5242880",
+   		"batch.num.messages": "1000000"
+	},
+	"dedup": {
+		"kafka": {
+			"group.id": "dedup",
+			"group.instance.id": "dedup"
+		},
+		"kafka_input": "grpc1",
+		"kafka_output": "grpc2",
+		"kafka_queue_size": "10_000",
+		"backend": {
+			"type": "memory"
+		}
+	},
+	"grpc2kafka": {
+		"endpoint": "https://rpc.nyx.pro:30000",
+		"x_token": null,
+		"request": {
+			"slots": {
+				"client": {
+					"filter_by_commitment": true,
+					"start_slot": 316495045
+				}
+			},
+
+			"blocks": {
+				"client": {
+					"account_include": [],
+					"include_transactions": true,
+					"include_accounts": false,
+					"include_entries": false
+				}
+			},
+			"filters": {
+				"commitment": "processed"
+			}
+		},
+		"kafka": {},
+		"kafka_topic": "sol_chain_data",
+		"kafka_queue_size": "10_000"
+	},
+	"kafka2grpc": {
+		"kafka": {
+			"group.id": "kafka2grpc",
+			"group.instance.id": "kafka2grpc"
+		},
+		"kafka_topic": "grpc2",
+		"listen": "127.0.0.1:10001",
+		"channel_capacity": 250000
+	}
+}
