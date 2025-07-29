@@ -63,14 +63,6 @@ jobs:
 
       - name: Build Docker image
         run: |
-          cat <<EOF > Dockerfile
-          FROM ubuntu:2404
-          WORKDIR /app
-          COPY target/release/grpc-kafka .
-          COPY config-test.json .
-          COPY config-online.json .
-          ENTRYPOINT ["tail", "-f", "/dev/null"]
-          EOF
           docker build -t ${{ secrets.ACR_REGISTRY }}/newx/${{ github.event.repository.name }}:${{ github.sha }} .
       - name: Push Docker image to Alibaba Cloud
         run: docker push ${{ secrets.ACR_REGISTRY }}/newx/${{ github.event.repository.name }}:${{ github.sha }}
