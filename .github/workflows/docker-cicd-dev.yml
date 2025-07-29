@@ -87,7 +87,7 @@ jobs:
           cd /opt/charts
           ls /opt/charts
           helm upgrade --install mmo-grpc2kafka-test output/mmo-grpc2kafka-test \
-            --set api.image=${{ secrets.ACR_REGISTRY }}/mmo-dev/${{ github.event.repository.name }} \
-            --set api.imageTag=${{ github.sha }}\
+            --set service.image=${{ secrets.ACR_REGISTRY }}/mmo-dev/${{ github.event.repository.name }} \
+            --set service.imageTag=${{ github.sha }}\
             -n mmo-dev
         EOF
